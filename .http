@@ -1,0 +1,31 @@
+@base = http://localhost:8000/
+
+### REGISTER
+POST {{base}}/signup
+Content-Type: application/json
+
+{
+    "name": "Sir",
+    "email": "sir@mail.com",
+    "password": "somepass"
+}
+### USERS LIST
+GET {{base}}
+Content-Type: application/json
+### LOGIN
+POST {{base}}/login
+Content-Type: application/json
+
+{
+    "email": "sir@mail.com",
+    "password": "somepass"
+}
+### USER
+GET {{base}}/user
+Content-Type: application/json
+Cookie: session=bcf391e85f5a3926c524105829b3e84c2b14ebb9ccc7ed4357519ec42e49533e;
+
+### USER
+GET {{base}}/user
+Content-Type: application/json
+Cookie: session=31780c4be915d9aadab8b5e43a9f8ca5a6f6a29734ff292edf4cf6847349afa8;
