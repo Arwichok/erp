@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .dto import WriteUserDTO
 from .models import User
 
+import bcrypt
+
 
 class Repository(repository.SQLAlchemyAsyncRepository, Generic[repository.ModelT]):
     @classmethod
@@ -22,12 +24,13 @@ class UserRepository(Repository[User]):
         if existed_user:
             raise ValueError(f"User with email {user.email} already exists")
         else:
+            salt = bcrypt.gensalt()
             return await self.add(
                 User(
                     name=user.name,
                     email=user.email,
-                    password=user.password,
-                    salt="",
+                    password=bcrypt.hashpw(user.password, salt),
+                    salt=salt,
                 ),
                 auto_commit=True,
             )

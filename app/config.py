@@ -51,7 +51,7 @@ sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
 session_auth = SessionAuth[User, ServerSideSessionBackend](
     retrieve_user_handler=retrieve_user_handler,
     session_backend_config=ServerSideSessionConfig(),
-    exclude=["/login", "/signup", "/schema"],
+    exclude=["/login", "/signup", "/users"],
 )
 
 memory_store = MemoryStore()

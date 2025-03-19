@@ -18,7 +18,7 @@ class APIController(Controller):
     dependencies = {"user_repository": Provide(UserRepository.provide)}
 
 
-    @get("/")
+    @get("/users")
     async def index(self, user_repository: UserRepository, request: Request) -> list[User]:
         pprint(request.app.state.get("engine"))
 

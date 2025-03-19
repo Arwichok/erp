@@ -3,7 +3,7 @@ set windows-shell := ["C:\\Program Files\\Git\\bin\\sh.exe","-c"]
 
 
 dev:
-	uv run litestar run -rd
+	uv run litestar run -R app -rd --reload-exclude tests
 
 run:
 	uv run litestar run

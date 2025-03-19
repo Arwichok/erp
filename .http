@@ -10,7 +10,7 @@ Content-Type: application/json
     "password": "somepass"
 }
 ### USERS LIST
-GET {{base}}
+GET {{base}}/users
 Content-Type: application/json
 ### LOGIN
 POST {{base}}/login
