@@ -12,16 +12,12 @@ from ..repos import UserRepository
 
 
 class APIController(Controller):
-
     dto = WriteUserDTO
     return_dto = ReadUserDTO
     dependencies = {"user_repository": Provide(UserRepository.provide)}
 
-
     @get("/users")
     async def index(self, user_repository: UserRepository, request: Request) -> list[User]:
-        pprint(request.app.state.get("engine"))
-
         return await user_repository.list()
 
     @post("/signup")
@@ -36,7 +32,6 @@ class APIController(Controller):
         except ValueError as e:
             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail=str(e))
         
-
     @post("/login", dto=PayloadUserDTO)
     async def login(self, data: User, user_repository: UserRepository, request: Request) -> User:
         store = request.app.stores.get("memory")
@@ -48,7 +43,6 @@ class APIController(Controller):
         await store.set(user.email, user.id)
         request.set_session({"user_id": user.id})
         return user
-
 
     @get("/user")
     async def get_user(self, user_repository: UserRepository, request: Request) -> User:

@@ -1,5 +1,5 @@
 set windows-shell := ["C:\\Program Files\\Git\\bin\\sh.exe","-c"]
-
+set dotenv-load
 
 
 dev:
@@ -9,7 +9,7 @@ run:
 	uv run litestar run
 
 test:
-	uv run tests/fakes.py
+	uv run pytest .
 
 buildcontainer:
 	podman build -t erp:latest  --ignorefile=.gitignore .

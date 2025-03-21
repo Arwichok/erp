@@ -3,6 +3,7 @@ from __future__ import annotations
 from pprint import pprint
 from typing import TYPE_CHECKING, Any
 
+from environs import Env
 from litestar import Request
 from litestar.connection import ASGIConnection
 from litestar.di import Provide
@@ -23,8 +24,8 @@ from .repos import UserRepository
 if TYPE_CHECKING:
     from litestar import Litestar
 
-
-DB_URL = "sqlite+aiosqlite:///db.sqlite3"
+env = Env()
+DB_URL = env.str("DB_URL", "sqlite+aiosqlite:///db.sqlite3")
 
 
 async def sqlalchemy_init(app: Litestar) -> None:
