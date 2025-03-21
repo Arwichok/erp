@@ -1,13 +1,12 @@
-from pprint import pprint
+
 from typing import Generic, Self
 
+import bcrypt
 from litestar.plugins.sqlalchemy import repository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .dto import WriteUserDTO
 from .models import User
-
-import bcrypt
 
 
 class Repository(repository.SQLAlchemyAsyncRepository, Generic[repository.ModelT]):
@@ -29,8 +28,20 @@ class UserRepository(Repository[User]):
                 User(
                     name=user.name,
                     email=user.email,
-                    password=bcrypt.hashpw(user.password, salt),
+                    password=bcrypt.hashpw(user.password.encode("utf-8"), salt).decode(
+                        "utf-8"
+                    ),
                     salt=salt,
                 ),
                 auto_commit=True,
             )
+
+    async def accept_user(self, user: User | WriteUserDTO) -> User:
+        if available_user := await self.get_one_or_none(User.email == user.email):
+            if bcrypt.checkpw(
+                user.password.encode("utf-8"), available_user.password.encode("utf-8")
+            ):
+                return available_user
+            else:
+                raise ValueError("Invalid credentials")
+        raise ValueError("User not found")

@@ -34,18 +34,16 @@ class APIController(Controller):
         
     @post("/login", dto=PayloadUserDTO)
     async def login(self, data: User, user_repository: UserRepository, request: Request) -> User:
-        store = request.app.stores.get("memory")
-
-        user = await user_repository.get_one_or_none(User.email == data.email)
-        if not user or user.password != data.password:
-            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Invalid credentials")
+        try:
+            if user := await user_repository.accept_user(data):
+                store = request.app.stores.get("memory")
+                await store.set(user.email, user.id)
+                request.set_session({"user_id": user.id})
+                return user
+        except ValueError as e:
+            raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail=str(e))
         
-        await store.set(user.email, user.id)
-        request.set_session({"user_id": user.id})
-        return user
-
     @get("/user")
     async def get_user(self, user_repository: UserRepository, request: Request) -> User:
-        # store = request.app.stores.get("memory")
         return await user_repository.get_one_or_none(User.id == request.session.get("user_id"))
-    
+

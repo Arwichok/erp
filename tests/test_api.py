@@ -3,7 +3,9 @@ import pathlib
 import sys
 from collections.abc import AsyncIterator
 from os import getenv
+import time
 
+from faker import Faker
 import httpx
 import httpx_sse
 import pytest
@@ -17,6 +19,23 @@ if sys.platform == "win32":
 from app import create_app
 
 
+faker = Faker()
+
+TEST_USERS = [
+    {
+        "email": faker.email(),
+        "password": faker.password(),
+        "name": faker.name(),
+    }
+    for _ in range(10)
+]
+
+TEST_USER = {
+    "email": "V2k0p@example.com",
+    "password": "password",
+    "name": "John Doe",
+}
+
 
 @pytest.fixture(scope="function")
 async def client() -> AsyncIterator[AsyncTestClient[Litestar]]:
@@ -27,7 +46,53 @@ async def client() -> AsyncIterator[AsyncTestClient[Litestar]]:
 
 
 async def test_users(client: AsyncTestClient[Litestar]) -> None:
-
     response = await client.get("/users")
-
     assert response.status_code == 200
+
+
+async def test_signup(
+        client: AsyncTestClient[Litestar],
+        user: dict[str, str] = TEST_USER
+) -> None:
+    response = await client.post("/signup", json=user)
+    assert response.status_code == 201
+
+
+async def test_login(client: AsyncTestClient[Litestar],
+                     user: dict[str, str] = TEST_USER
+) -> None:
+    response = await client.post("/login", json=dict(
+        email=user["email"],
+        password=user["password"],
+    ))
+    assert response.status_code == 201
+
+    response = await client.get("/user")
+    assert response.status_code == 200
+    user = response.json()
+    assert user.get("email") == user["email"]
+    assert user.get("name") == user["name"]
+
+
+async def test_10(client: AsyncTestClient[Litestar]) -> None:
+    asyncio.gather(
+        *[client.post("/signup", json=user) for user in TEST_USERS]
+    )
+
+    app = create_app()
+    app.debug = True
+    
+    for user in TEST_USERS:
+        client = AsyncTestClient(app=app)
+        response = await client.post("/login", json=dict(
+            email=user["email"],
+            password=user["password"],
+        ))
+        assert response.status_code == 201
+
+        response = await client.get("/user")
+        assert response.status_code == 200
+        user = response.json()
+        assert user.get("email") == user["email"]
+        assert user.get("name") == user["name"]
+    

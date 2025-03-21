@@ -1,4 +1,6 @@
+from contextlib import suppress
 import os
 
-
-# os.environ["DB_URL"] = "sqlite+aiosqlite:///:memory:"
+with suppress(FileNotFoundError):
+    os.remove("test.sqlite3")
+os.environ["DB_URL"] = "sqlite+aiosqlite:///test.sqlite3"

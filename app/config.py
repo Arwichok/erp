@@ -14,6 +14,7 @@ from litestar.middleware.session.server_side import (
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyInitPlugin
 from litestar.security.session_auth.auth import SessionAuth
 from litestar.stores.memory import MemoryStore
+from litestar.stores.file import FileStore
 from litestar.stores.registry import StoreRegistry
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,7 +58,10 @@ session_auth = SessionAuth[User, ServerSideSessionBackend](
 
 memory_store = MemoryStore()
 
-stores = StoreRegistry(stores={"memory": memory_store})
+def default_store(name: str):
+    return memory_store
+
+stores = StoreRegistry(default_factory=default_store)
 plugins = [sqlalchemy_plugin]
 on_startup = [sqlalchemy_init]
 on_app_init = [session_auth.on_app_init]
