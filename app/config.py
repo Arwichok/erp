@@ -61,7 +61,13 @@ memory_store = MemoryStore()
 def default_store(name: str):
     return memory_store
 
-stores = StoreRegistry(default_factory=default_store)
+stores = StoreRegistry(
+    stores={
+        "memory": memory_store,
+        "session": memory_store,
+    },
+    default_factory=default_store
+)
 plugins = [sqlalchemy_plugin]
 on_startup = [sqlalchemy_init]
 on_app_init = [session_auth.on_app_init]
