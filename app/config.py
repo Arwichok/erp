@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from pprint import pprint
 from typing import TYPE_CHECKING, Any
 
@@ -11,12 +12,16 @@ from litestar.middleware.session.server_side import (
     ServerSideSessionBackend,
     ServerSideSessionConfig,
 )
+from litestar.template.config import TemplateConfig
+from litestar.contrib.jinja import JinjaTemplateEngine
+from litestar_browser_reload import BrowserReloadPlugin
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyInitPlugin
 from litestar.security.session_auth.auth import SessionAuth
 from litestar.stores.memory import MemoryStore
 from litestar.stores.file import FileStore
 from litestar.stores.registry import StoreRegistry
 from sqlalchemy.ext.asyncio import AsyncSession
+from watchfiles import DefaultFilter
 
 from .models import User, metadata
 from .repos import UserRepository
@@ -27,6 +32,9 @@ if TYPE_CHECKING:
 
 env = Env()
 DB_URL = env.str("DB_URL", "sqlite+aiosqlite:///db.sqlite3")
+APP_PATH = Path(__file__).parent
+ROOT_PATH = APP_PATH.parent
+TEMPLATES_PATH = APP_PATH / "controllers" / "templates"
 
 
 async def sqlalchemy_init(app: Litestar) -> None:
@@ -49,11 +57,18 @@ sqlalchemy_config = SQLAlchemyAsyncConfig(
 )
 sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
 
-
+template_config=TemplateConfig(
+    directory=TEMPLATES_PATH,
+    engine=JinjaTemplateEngine
+)
+browser_reload_plugin = BrowserReloadPlugin(
+    watch_paths=(TEMPLATES_PATH,),
+    watch_filter=DefaultFilter(ignore_dirs=(".git", ".hg", ".svn", ".tox")),
+)
 session_auth = SessionAuth[User, ServerSideSessionBackend](
     retrieve_user_handler=retrieve_user_handler,
     session_backend_config=ServerSideSessionConfig(),
-    exclude=["/login", "/signup", "/users"],
+    exclude=["/login", "/signup", "/"],
 )
 
 memory_store = MemoryStore()
@@ -68,7 +83,7 @@ stores = StoreRegistry(
     },
     default_factory=default_store
 )
-plugins = [sqlalchemy_plugin]
+plugins = [sqlalchemy_plugin, browser_reload_plugin]
 on_startup = [sqlalchemy_init]
 on_app_init = [session_auth.on_app_init]
 dependencies = {}

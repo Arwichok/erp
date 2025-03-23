@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP</title>
+    {% if request.app.debug %}<script
+        src="/__reload__/static/reload-listener.js"
+        data-worker-script-path="/__reload__/static/reload-worker.js"
+        data-ws-path="/__reload__"
+        defer
+    ></script>{% endif %}
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <details>
+        <summary>Signup</summary>
+        <form hx-post="/signup" hx-swap-oob="true">
+            <input type="email" name="email" placeholder="Email">
+            <input type="text" name="name" placeholder="Name">
+            <input type="password" name="password" placeholder="Password">
+            <input type="submit" value="Signup">
+        </form>
+    </details>
+    <details open>
+        <summary>Login</summary>
+        <form hx-post="/login" hx-swap-oob="true">
+            <input type="email" name="email" placeholder="Email">
+            <input type="password" name="password" placeholder="Password">
+            <input type="submit" value="Login">
+        </form>
+    </details>
+
+
+    Hello 
+
+</body>
+</html>
