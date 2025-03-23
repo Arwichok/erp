@@ -12,6 +12,7 @@ from ..repos import UserRepository
 
 
 class APIController(Controller):
+    path = "/api"
     dto = WriteUserDTO
     return_dto = ReadUserDTO
     dependencies = {"user_repository": Provide(UserRepository.provide)}

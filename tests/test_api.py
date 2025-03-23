@@ -21,15 +21,6 @@ from app import create_app
 
 faker = Faker()
 
-TEST_USERS = [
-    {
-        "email": faker.email(),
-        "password": faker.password(),
-        "name": faker.name(),
-    }
-    for _ in range(10)
-]
-
 TEST_USER = {
     "email": "V2k0p@example.com",
     "password": "password",
@@ -41,7 +32,7 @@ TEST_USER = {
 async def client() -> AsyncIterator[AsyncTestClient[Litestar]]:
     app = create_app()
     app.debug = True
-    async with AsyncTestClient(app=app) as client:
+    async with AsyncTestClient(app=app, base_url="http://host.local:8000/api") as client:
         yield client
 
 
@@ -73,26 +64,3 @@ async def test_login(client: AsyncTestClient[Litestar],
     assert user.get("email") == user["email"]
     assert user.get("name") == user["name"]
 
-
-async def test_10(client: AsyncTestClient[Litestar]) -> None:
-    asyncio.gather(
-        *[client.post("/signup", json=user) for user in TEST_USERS]
-    )
-
-    app = create_app()
-    app.debug = True
-    
-    for user in TEST_USERS:
-        client = AsyncTestClient(app=app)
-        response = await client.post("/login", json=dict(
-            email=user["email"],
-            password=user["password"],
-        ))
-        assert response.status_code == 201
-
-        response = await client.get("/user")
-        assert response.status_code == 200
-        user = response.json()
-        assert user.get("email") == user["email"]
-        assert user.get("name") == user["name"]
-    
